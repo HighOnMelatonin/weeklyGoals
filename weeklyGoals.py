@@ -3,24 +3,22 @@ import json
 
 def makeJson(filename: str) -> None:
     filepath = 'goals/' + filename + ".json"
-
-    try:
-        file = open(filepath, 'r+')
+    file = open(filepath, 'w')
+    file.close()
     
-    except FileNotFoundError:
-        file = open(filepath, "r+")
-        json.dumps('{}',)
-    
-    finally:
-        file.close()
-
     return None
 
 def getJson(filename: str) -> dict:
     filepath = 'goals/' + filename + '.json'
-    file = open(filepath, 'r+')
-    data = json.load(file)
-    file.close()
+    try:
+        file = open(filepath, 'r+')
+        data = json.load(file)
+        file.close()
+    
+    except FileNotFoundError:
+        makeJson(filename)
+        data = {}
+    
     return data
 
 def seeGoals(filename: str, week: str) -> None:
@@ -36,18 +34,12 @@ def seeGoals(filename: str, week: str) -> None:
     
     return None
 
-def setGoal(filename: str, week: str, goal: str) -> None:
+def setGoal(filename: str, newData: dict) -> None:
+    ## Updates Json to match newData
     filepath = 'goals/' + filename + '.json'
     file = open(filepath, 'r+')
-    data = getJson(filename)
-
-    try:
-        data[week] += [goal]
-
-    except KeyError:
-        data[week] = [goal]
     
-    json.dump(data, file)
+    json.dump(newData, file)
     file.close()
     return None
 
@@ -91,7 +83,12 @@ def main():
 
         if entry == "2":
             goal = str(input("Goal: "))
-            setGoal(filename, week, goal)
+            try:
+                data[week] = data[week] + [goal]
+
+            except KeyError:
+                data[week] = [goal]
+            setGoal(filename, data)
             print("Added", goal)
 
         if entry == "3":
